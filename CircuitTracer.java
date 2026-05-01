@@ -1,4 +1,4 @@
-import java.awt.List;
+
 import java.awt.Point;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ public class CircuitTracer {
     private void printUsage() {
         // print out clear usage instructions when there are problems with
         // any command line args
+        System.out.println("java CircuitTracer");
         System.out.println("Three required arguments:");
         System.out.println("1st arg:   -s for stack | -q for queue");
         System.out.println("2nd arg:   -c for console output | -g for GUI output");
@@ -84,10 +85,10 @@ public class CircuitTracer {
         try {
             cb = new CircuitBoard(filename);
         } catch (FileNotFoundException fnfe) {
-            System.out.println("File not found.");
+            System.out.println(fnfe);
             return;
         } catch (InvalidFileFormatException iffe) {
-            System.out.println("Invalid file format.");
+            System.out.println(iffe);
             return;
         }
 
@@ -95,30 +96,75 @@ public class CircuitTracer {
         Storage<TraceState> stateStore = null;
         stateStore = (stackUse) ? Storage.getStackInstance() : Storage.getQueueInstance();
 
-        List<TraceState> bestPaths = new ArrayList<TraceState>();
+        ArrayList<TraceState> bestPaths = new ArrayList<TraceState>();
 
         Point starter = cb.getStartingPoint();
 
-        int[] dx = {-1, 1, 0, 0};
-        int[] dy = {0, 0, 1, -1};
+        int[] dx = { -1, 1, 0, 0 };
+        int[] dy = { 0, 0, 1, -1 };
+
+        int newX, newY;
 
         // check north, east, south, west of starting point
         for (int i = 0; i < 4; i++) {
-            if (!cb.isOpen(starter.x + dx[i], starter.y + dy[i])) {
+            newX = starter.x + dx[i];
+            newY = starter.y + dy[i];
+
+            // check if out of board bounds
+            if (newX < 0 || newX >= cb.numCols() || newY < 0 || newY >= cb.numRows()) {
                 continue;
             }
-            stateStore.store(new TraceState(cb, starter.x + dx[i], starter.y + dy[i]));
+
+            if (!cb.isOpen(newX, newY)) {
+                continue;
+            }
+            try {
+                stateStore.store(new TraceState(cb, newX, newY));
+            } catch (Exception e) {
+            }
         }
 
         while (!stateStore.isEmpty()) {
+
             TraceState currentState = stateStore.retrieve();
 
-            
+            if (currentState.isSolution()) {
+                if (bestPaths.isEmpty() || currentState.pathLength() == bestPaths.get(0).pathLength()) {
+                    bestPaths.add(currentState);
+                } else if (currentState.pathLength() < bestPaths.get(0).pathLength()) {
+                    bestPaths.clear();
+                    bestPaths.add(currentState);
+                }
+            } else {
+                for (int i = 0; i < 4; i++) {
+
+                    newX = currentState.getRow() + dx[i];
+                    newY = currentState.getCol() + dy[i];
+
+                    if (newX < 0 || newX >= cb.numCols() || newY < 0 || newY >= cb.numRows()) {
+                        continue;
+                    }
+                    if (cb.isOpen(newX, newY)) {
+                        try {
+                            stateStore.store(new TraceState(currentState, newX, newY));
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
         }
 
+        // output results to console or GUI, according to specified choice
+        if (consoleUse)
 
+        {
+            for (TraceState path : bestPaths) {
+                System.out.println(path);
+            }
+        }
+        if (guiUse) {
 
-        // TODO: output results to console or GUI, according to specified choice
+        }
     }
 
 } // class CircuitTracer

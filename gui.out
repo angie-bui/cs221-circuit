@@ -1,2 +1,1 @@
-Error: Could not find or load main class CircuitTracer
-Caused by: java.lang.ClassNotFoundException: CircuitTracer
+InvalidFileFormatException: Format issue with rows.

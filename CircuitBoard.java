@@ -70,9 +70,11 @@ public class CircuitBoard {
 			throw new InvalidFileFormatException("Rows/columns cannot be negative.");
 		}
 
+		board = new char[ROWS][COLS];
+
 		if (!fileScan.nextLine().isEmpty()) {
 			fileScan.close();
-			throw new InvalidFileFormatException("Formatssue with Line 1 of the file.");
+			throw new InvalidFileFormatException("Format issue with Line 1 of the file.");
 		}
 
 		int oneCount = 0;
@@ -93,16 +95,18 @@ public class CircuitBoard {
 				} else {
 					board[row][col] = nextValue;
 					if (board[row][col] == START) {
+						startingPoint = new Point(row, col);
 						oneCount++;
 					}
 					if (board[row][col] == END) {
+						endingPoint = new Point(row, col);
 						twoCount++;
 					}
 				}
 			}
 
 			// check there are no extra columns or missing rows
-			if (!fileScan.nextLine().isEmpty() && (row < ROWS - 1 && !fileScan.hasNext())) {
+			if (!fileScan.nextLine().isEmpty() || (row <= ROWS - 1 && !fileScan.hasNext())) {
 				fileScan.close();
 				throw new InvalidFileFormatException("Format issue with rows.");
 			}
