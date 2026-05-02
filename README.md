@@ -7,100 +7,74 @@
 
 OVERVIEW:
 
- Concisely explain what the program does. If this exceeds a couple
- of sentences, you're going too far. The details go in other
- sections.
- This program looks through a text file 
+ This program finds the shortest path between the starting and end points in a text file and displays it for the user. 
 
 
 INCLUDED FILES:
 
- List the files required for the project with a brief
- explanation of why each is included.
-
- e.g.
- * Class1.java - source file
- * Class2.java - source file
  * README - this file
  * CircuitBoard.java - source file
- 
+ * CircuitTracer.java - source file
+ * CircuitTracerGUI.java - file for the GUI
+ * CircuitTracerTester.java - tester class for source files
+ * InvalidFileFormatException.java - exception for invalid formatting
+ * OccupiedPositionException.java - exception for position occupied
+ * Storage.java - stack/queue usage
+ * TraceState.java - stores circuit board paths
+ * boards/ - folder of circuit board text files to test for validity
 
 
 COMPILING AND RUNNING:
 
- Give the command for compiling the program, the command
- for running the program, and any usage instructions the
- user needs.
- 
- These are command-line instructions for a system like onyx.
- They have nothing to do with Eclipse or any other IDE. They
- must be specific - assume the user has Java installed, but
- has no idea how to compile or run a Java program from the
- command-line.
- 
- e.g.
- From the directory containing all source files, compile the
- driver class (and all dependencies) with the command:
- $ javac Class1.java
+ Compile with the command:
+ $ javac *.java
 
  Run the compiled class file with the command:
- $ java Class1
+ $ java CircuitTracerTester
+            OR
+ $ java CircuitTracer <-s|-q> <-c|-g> <inputfile>
 
  Console output will give the results after the program finishes.
 
 
 PROGRAM DESIGN AND IMPORTANT CONCEPTS:
 
- This is the sort of information someone who really wants to
- understand your program - possibly to make future enhancements -
- would want to know.
-
- Explain the main concepts and organization of your program so that
- the reader can understand how your program works. This is not a repeat
- of javadoc comments or an exhaustive listing of all methods, but an
- explanation of the critical algorithms and object interactions that make
- up the program.
-
- Explain the main responsibilities of the classes and interfaces that make
- up the program. Explain how the classes work together to achieve the program
- goals. If there are critical algorithms that a user should understand, 
- explain them as well.
+ The main concepts of the program was to be able to scan through and check the format validity before reading in the variables from the text file. It is important to make sure that the characters used in the file were allowed characters, so that later on there wouldn't be issues looking around. Another main concept was to make sure that the search continued within the bounds of the circuit board. If we didn't check that, then the board would be looping pretty much forever. 
  
- If you were responsible for designing the program's classes and choosing
- how they work together, why did you design the program this way? What, if 
- anything, could be improved? 
+ The organization of the program worked with the board first and making sure the methods of the board are valid. I also used a CircuitTracer class which kept track of all of the best paths of the circuit board. If there was a shorter path that was found, then the list of best paths would be replaced by the shortest found path. The classes work together by organizing the board and keeping track of points, searching through the board, and then displaying the trace afterward to the user. 
+
+
+ANALYSIS:
+
+Stack vs. queue:
+Stack (LIFO) goes to the most recently discovered path and commits early to one path before it hits a dead end or a solution. It finds longer paths sooner.
+Queue on the other hand (FIFO) looks at all of lengths of specific paths before it goes on to longer paths. It looks for shorter paths first.
+
+Choosing the total number of search states (possible paths) is not affected by the choice of stack or queue. Both of these will generate the same amount of paths. The only difference is what the order of the explored paths are and how many states were explored before a solution was found.  
+
+If the solution is short, then the queue will find the solution in the fewest steps. The stack can find a solution faster if that solution happens to be one that it explores first. Neither is "always" better though.
+
+For the queue, it does guarantee that the first solution found will be the shortest path since it looks through paths by their length. On the other hand, the stack does not guarantee this because it could be exploring a longer solution beforre it looks at a shorter one. 
+
+The stack has a lower memory usage than the queue because the stack only stores the current path and some other paths so memory grows pretty linear. However, the queue stores all of the paths with the current shorest length that it is looking at, so it is very memory intensive compared with the stack. 
+
+The Big-O is O(4^n) for the search algorithm because there are 4 directions that it is looking in and n is the steps that it is taking. 
+
+The order reflects the total number of paths explored in the worst case. As you continue through the search, the paths grow exponentially.
+
+'n' is the size of the board or size of the elements. 
+
 
 TESTING:
 
- How did you test your program to be sure it works and meets all of the
- requirements? What was the testing strategy? What kinds of tests were run?
- Can your program handle bad input? Is your program  idiot-proof? How do you 
- know? What are the known issues / bugs remaining in your program?
+ To test this program, I mainly used the CircuitTracerTester class to see which tests were not passing and how to fix those with the board folder's invalid and valid text files. Some issues that popped up in the code while working on the project were logic errors while making sure that the text file was in a valid format, using the search to check each direction from the starting point to get to the ending point while also staying within bounds. Another error that I got while working on the project was the OccupiedPositionException where I had to surround storing the currentState to the Storage with a try catch to not let the OPE crash the code. 
 
 
 DISCUSSION:
- 
- Discuss the issues you encountered during programming (development)
- and testing. What problems did you have? What did you have to research
- and learn on your own? What kinds of errors did you get? How did you 
- fix them?
- 
- What parts of the project did you find challenging? Is there anything
- that finally "clicked" for you in the process of working on this project?
+
+Some of the challenges with this project were the tester class and having a lot of the scenarios fail. To solve this I looked back on the logic and the methods of my classes to check where the error is. I debugged the code and used breakpoints to try and figure out where the code didn't run the way I intended. Another challenge was that the GUI test classes at first were not running. I realized that instead of clicking File and Quit, I actually had to wait out for the GUI to exit itself in order to get those tests to pass. 
  
  
 EXTRA CREDIT:
 
- If the project had opportunities for extra credit that you attempted,
- be sure to call it out so the grader does not overlook it.
-
-
-----------------------------------------------------------------------------
-
-All content in a README file is expected to be written in clear English with
-proper grammar, spelling, and punctuation. If you are not a strong writer,
-be sure to get someone else to help you with proofreading. Consider all project
-documentation to be professional writing for your boss and/or potential
-customers.
-
-Displaying README_overview.txt.
+CircuitTracerGUI class to display the GUI when the user selects for the output to be displayed that way. 
