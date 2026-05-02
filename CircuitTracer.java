@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * search state storage structure and displaying output to the console or to
  * a GUI according to options specified via command-line arguments.
  *
- * @author mvail
+ * @author mvail, angiebui
  */
 public class CircuitTracer {
 
@@ -31,8 +31,7 @@ public class CircuitTracer {
     private void printUsage() {
         // print out clear usage instructions when there are problems with
         // any command line args
-        System.out.println("java CircuitTracer");
-        System.out.println("Three required arguments:");
+        System.out.println("java CircuitTracer <-s|-q> <-c|-g> <input file>");
         System.out.println("1st arg:   -s for stack | -q for queue");
         System.out.println("2nd arg:   -c for console output | -g for GUI output");
         System.out.println("3rd arg:   input file name");
@@ -100,27 +99,27 @@ public class CircuitTracer {
 
         Point starter = cb.getStartingPoint();
 
-        int[] dx = { -1, 1, 0, 0 };
-        int[] dy = { 0, 0, 1, -1 };
+        int[] dRow = { -1, 1, 0, 0 };
+        int[] dCol = { 0, 0, 1, -1 };
 
-        int newX, newY;
+        int newRow, newCol;
 
         // check north, east, south, west of starting point
         for (int i = 0; i < 4; i++) {
-            newX = starter.x + dx[i];
-            newY = starter.y + dy[i];
+            newRow = starter.x + dRow[i];
+            newCol = starter.y + dCol[i];
 
             // check if out of board bounds
-            if (newX < 0 || newX >= cb.numCols() || newY < 0 || newY >= cb.numRows()) {
+            if (newRow < 0 || newRow >= cb.numRows() || newCol < 0 || newCol >= cb.numCols()) {
                 continue;
             }
 
-            if (!cb.isOpen(newX, newY)) {
+            if (!cb.isOpen(newRow, newCol)) {
                 continue;
             }
             try {
-                stateStore.store(new TraceState(cb, newX, newY));
-            } catch (Exception e) {
+                stateStore.store(new TraceState(cb, newRow, newCol));
+            } catch (OccupiedPositionException ope) {
             }
         }
 
@@ -138,16 +137,16 @@ public class CircuitTracer {
             } else {
                 for (int i = 0; i < 4; i++) {
 
-                    newX = currentState.getRow() + dx[i];
-                    newY = currentState.getCol() + dy[i];
+                    newRow = currentState.getRow() + dRow[i];
+                    newCol = currentState.getCol() + dCol[i];
 
-                    if (newX < 0 || newX >= cb.numCols() || newY < 0 || newY >= cb.numRows()) {
+                    if (newRow < 0 || newRow >= cb.numRows() || newCol < 0 || newCol >= cb.numCols()) {
                         continue;
                     }
-                    if (cb.isOpen(newX, newY)) {
+                    if (cb.isOpen(newRow, newCol)) {
                         try {
-                            stateStore.store(new TraceState(currentState, newX, newY));
-                        } catch (Exception e) {
+                            stateStore.store(new TraceState(currentState, newRow, newCol));
+                        } catch (OccupiedPositionException ope) {
                         }
                     }
                 }
@@ -155,15 +154,13 @@ public class CircuitTracer {
         }
 
         // output results to console or GUI, according to specified choice
-        if (consoleUse)
-
-        {
+        if (consoleUse) {
             for (TraceState path : bestPaths) {
                 System.out.println(path);
             }
         }
         if (guiUse) {
-
+            new CircuitTracerGUI(cb, bestPaths);
         }
     }
 

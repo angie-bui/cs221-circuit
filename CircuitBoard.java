@@ -50,75 +50,94 @@ public class CircuitBoard {
 		// throw FileNotFoundException if Scanner cannot read the file
 		// throw InvalidFileFormatException if any issues are encountered while parsing
 		// the file
+		try {
+			if (!fileScan.hasNextLine()) {
+				throw new InvalidFileFormatException("Format issue with Line 1 of the file.");
+			}
 
-		if (!fileScan.hasNextInt()) {
-			fileScan.close();
-			throw new InvalidFileFormatException("Issue while checking row count.");
-		}
+			String headerLine = fileScan.nextLine().trim();
+			Scanner headerScan = new Scanner(headerLine);
+			if (!headerScan.hasNextInt()) {
+				headerScan.close();
+				throw new InvalidFileFormatException("Issue while checking row count.");
+			}
+			ROWS = headerScan.nextInt();
+			if (!headerScan.hasNextInt()) {
+				headerScan.close();
+				throw new InvalidFileFormatException("Issue while checking column count.");
+			}
+			COLS = headerScan.nextInt();
+			if (headerScan.hasNext()) {
+				headerScan.close();
+				throw new InvalidFileFormatException("Format issue with Line 1 of the file.");
+			}
+			headerScan.close();
 
-		ROWS = fileScan.nextInt();
+			if (ROWS <= 0 || COLS <= 0) {
+				throw new InvalidFileFormatException("Rows/columns cannot be negative.");
+			}
 
-		if (!fileScan.hasNextInt()) {
-			fileScan.close();
-			throw new InvalidFileFormatException("Issue while checking column count.");
-		}
+			board = new char[ROWS][COLS];
 
-		COLS = fileScan.nextInt();
+			int oneCount = 0;
+			int twoCount = 0;
 
-		if (ROWS <= 0 || COLS <= 0) {
-			fileScan.close();
-			throw new InvalidFileFormatException("Rows/columns cannot be negative.");
-		}
-
-		board = new char[ROWS][COLS];
-
-		if (!fileScan.nextLine().isEmpty()) {
-			fileScan.close();
-			throw new InvalidFileFormatException("Format issue with Line 1 of the file.");
-		}
-
-		int oneCount = 0;
-		int twoCount = 0;
-
-		for (int row = 0; row < ROWS; row++) {
-			for (int col = 0; col < COLS; col++) {
-				if (!fileScan.hasNext()) {
-					fileScan.close();
-					throw new InvalidFileFormatException("Missing necessary column.");
+			for (int row = 0; row < ROWS; row++) {
+				if (!fileScan.hasNextLine()) {
+					throw new InvalidFileFormatException("Format issue with rows.");
+				}
+				String rowLine = fileScan.nextLine().trim();
+				if (rowLine.isEmpty()) {
+					throw new InvalidFileFormatException("Format issue with rows.");
 				}
 
-				char nextValue = fileScan.next().charAt(0);
-
-				if (ALLOWED_CHARS.indexOf(nextValue) == -1) { // isn't in the list of allowed characters
-					fileScan.close();
-					throw new InvalidFileFormatException("Invalid character.");
-				} else {
+				Scanner rowScan = new Scanner(rowLine);
+				for (int col = 0; col < COLS; col++) {
+					if (!rowScan.hasNext()) {
+						rowScan.close();
+						throw new InvalidFileFormatException("Issue while checking column count.");
+					}
+					String token = rowScan.next();
+					if (token.length() != 1) {
+						rowScan.close();
+						throw new InvalidFileFormatException("Invalid character.");
+					}
+					char nextValue = token.charAt(0);
+					if (ALLOWED_CHARS.indexOf(nextValue) == -1) { // isn't in the list of allowed characters
+						rowScan.close();
+						throw new InvalidFileFormatException("Invalid character.");
+					}
 					board[row][col] = nextValue;
-					if (board[row][col] == START) {
+					if (nextValue == START) {
 						startingPoint = new Point(row, col);
 						oneCount++;
-					}
-					if (board[row][col] == END) {
+					} else if (nextValue == END) {
 						endingPoint = new Point(row, col);
 						twoCount++;
 					}
 				}
+
+				if (rowScan.hasNext()) {
+					rowScan.close();
+					throw new InvalidFileFormatException("Issue while checking column count.");
+				}
+				rowScan.close();
 			}
 
-			// check there are no extra columns or missing rows
-			if (!fileScan.nextLine().isEmpty() || (row <= ROWS - 1 && !fileScan.hasNext())) {
-				fileScan.close();
-				throw new InvalidFileFormatException("Format issue with rows.");
+			// check for no extra content after reading expected rows
+			while (fileScan.hasNextLine()) {
+				if (!fileScan.nextLine().trim().isEmpty()) {
+					throw new InvalidFileFormatException("Format issue with rows.");
+				}
 			}
-		}
 
-		// check for no extra starts/ends
-		if (oneCount != 1 || twoCount != 1) {
+			// check for exactly one start and one end
+			if (oneCount != 1 || twoCount != 1) {
+				throw new InvalidFileFormatException("More than one start/end.");
+			}
+		} finally {
 			fileScan.close();
-			throw new InvalidFileFormatException("More than one start/end.");
 		}
-
-		fileScan.close();
 	}
 
 	/**
